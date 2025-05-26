@@ -85,19 +85,34 @@ app.post('/login', async (req, res) => {
     db.query('UPDATE user SET is_online = 1 WHERE id_user = ?', [user.id_user], (err2) => {
       if (err2) return res.status(500).json({ error: err2.message });
 
-      // Répondre avec uniquement les attributs souhaités, sans token
       res.json({
         message: 'Connexion réussie',
         user: {
           id_user: user.id_user,
           name_user: user.name_user,
-          email_user: user.email_user
+          email_user: user.email_user,
+          role_user: user.role_user  // <-- ici on ajoute le rôle
         }
       });
     });
   });
 });
 
+
+// Route sécurisée admin pour récupérer tous les utilisateurs depuis la vue admin_user_view
+app.get('/admin/users', (req, res) => {
+  // Ici tu peux ajouter une vérification de token/session si tu en utilises
+
+  const sql = 'SELECT * FROM admin_user_view ORDER BY name_user';
+
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Erreur récupération utilisateurs :', err.message);
+      return res.status(500).json({ error: 'Erreur serveur' });
+    }
+    res.json(results);
+  });
+});
 
 
 
@@ -261,7 +276,35 @@ app.post('/sessions/leave', (req, res) => {
       res.json({ message: 'Départ de session réussi' })
     }
   )
-})
+});
+
+
+// Modifier un jeu existant
+app.put('/games/:id', (req, res) => {
+  const id = req.params.id;
+  let { name_game, year_game, thumbnail, url } = req.body;
+
+  year_game = `${year_game}-01-02`;
+ 
+  console.log(year_game);
+
+  const sql = `
+    UPDATE game
+    SET name_game = ?, year_game = ?, thumbnail = ?, url = ?
+    WHERE id_game = ?
+  `;
+
+  db.query(sql, [name_game, year_game, thumbnail, url, id], (err, result) => {
+    if (err) {
+      console.error('Erreur modification jeu :', err.message);
+      return res.status(500).json({ error: 'Erreur serveur' });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Jeu non trouvé' });
+    }
+    res.json({ message: 'Jeu modifié avec succès' });
+  });
+});
 
 
 //RECHERCHE

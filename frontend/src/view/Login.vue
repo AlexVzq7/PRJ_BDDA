@@ -29,13 +29,20 @@ export default {
         });
         console.log('Connexion réussie', res.data);
 
-        // Stocker l'objet user dans le localStorage (en JSON stringifié)
-        if(res.data.user) {
+        if (res.data.user) {
           localStorage.setItem('user', JSON.stringify(res.data.user));
-        }
 
-        // Rediriger après connexion
-        this.$router.push('/');
+          // Rediriger selon le rôle
+          if (res.data.user.role_user === 'admin') {
+            this.$router.push('/dashboard').then(() => {
+      window.location.reload();
+    });
+          } else {
+            this.$router.push('/').then(() => {
+      window.location.reload();
+    });
+          }
+        }
       } catch (err) {
         this.errorMessage = "Échec de la connexion";
         console.error('Erreur:', err);
