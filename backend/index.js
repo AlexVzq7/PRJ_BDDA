@@ -115,22 +115,69 @@ app.get('/games', (req, res) => {
 
 app.get('/game/:id', (req, res) => {
   const id = req.params.id;
-  const sql = 'SELECT * FROM game WHERE id_game = ' + id;
-  console.log(sql);
-  db.query(sql, (err, results) => {
+  const sql = `
+    SELECT
+      g.id_game,
+      g.name_game,
+      g.thumbnail   AS image_url,
+      g.url         AS website,
+      g.year_game   AS release_date,
+      g.is_available,
+      g.rank_game,
+      g.total_ratings,
+      gd.description_game   AS description,
+      gd.game_publisher     AS publisher,
+      GROUP_CONCAT(DISTINCT c.type_category SEPARATOR ',') AS categories
+    FROM Game g
+    LEFT JOIN Game_details gd ON g.id_game = gd.id_game
+    LEFT JOIN have h         ON g.id_game = h.id_game
+    LEFT JOIN Category c     ON h.id_category = c.id_category
+    WHERE g.id_game = ?
+    GROUP BY
+      g.id_game,
+      gd.description_game,
+      gd.game_publisher
+  `;
+
+  db.query(sql, [id], (err, results) => {
     if (err) {
-      console.log(res.status(500).json({ error: err.message }));
+      console.error('Erreur chargement jeu:', err.message);
       return res.status(500).json({ error: err.message });
-    } 
-    if (results.length === 0) return res.status(404).json({ error: 'Jeu non trouvé' });
-    console.log(results[0]);
-    res.json(results[0]); // envoie le premier résultat
+    }
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'Jeu non trouvé' });
+    }
+    // On renvoie l’objet jeu complet
+    res.json(results[0]);
   });
 });
 
 app.get('/sessions/game/:id', (req, res) => {
+  console.log("Hehe");
   const gameId = req.params.id;
-  const sql = 'SELECT * FROM session WHERE id_game = ?';
+  const sql = `
+    SELECT 
+      s.id_session,
+      s.id_game,
+      s.id_host,
+      s.min_players,
+      s.max_players,
+      s.playing_time,
+      s.min_playtime,
+      s.max_playtime,
+      s.min_age,
+      s.starting_date,
+      u_host.name_user AS host_name,
+      u_part.id_user AS participant_id,
+      u_part.name_user AS participant_name,
+      u_part.trust_score AS participant_score
+    FROM Session s
+    JOIN User u_host ON s.id_host = u_host.id_user
+    LEFT JOIN participate p ON s.id_session = p.id_session
+    LEFT JOIN User u_part ON p.id_user = u_part.id_user
+    WHERE s.id_game = ?
+    ORDER BY s.id_session;
+  `;
 
   db.query(sql, [gameId], (err, results) => {
     if (err) {
@@ -138,6 +185,132 @@ app.get('/sessions/game/:id', (req, res) => {
       return res.status(500).json({ error: 'Erreur serveur' });
     }
 
+    // Regrouper les résultats par session
+    const sessionsMap = new Map();
+
+    results.forEach(row => {
+      if (!sessionsMap.has(row.id_session)) {
+        console.log("Host Name : ",row.host_name);
+        sessionsMap.set(row.id_session, {
+          id_session: row.id_session,
+          id_game: row.id_game,
+          id_host: row.id_host,
+          host_name: row.host_name,
+          min_players: row.min_players,
+          max_players: row.max_players,
+          playing_time: row.playing_time,
+          min_playtime: row.min_playtime,
+          max_playtime: row.max_playtime,
+          min_age: row.min_age,
+          starting_date: row.starting_date,
+          participants: []
+        });
+      }
+      if (row.participant_id) {
+        sessionsMap.get(row.id_session).participants.push({
+          id_user: row.participant_id,
+          name_user: row.participant_name,
+          trust_score: row.participant_score
+        });
+      }
+    });
+
+    // Convertir map en tableau
+    const sessions = Array.from(sessionsMap.values());
+
+    res.json(sessions);
+  });
+});
+
+app.post('/sessions/join', (req, res) => {
+  const { id_session, id_user } = req.body;
+
+  if (!id_session || !id_user) {
+    return res.status(400).json({ error: 'id_session et id_user sont requis' });
+  }
+
+  const sql = 'CALL ajouter_participant(?, ?)';
+
+  db.query(sql, [id_session, id_user], (err, results) => {
+    if (err) {
+      console.error('Erreur lors de l’ajout du participant :', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    res.json({ message: 'Participant ajouté avec succès' });
+  });
+});
+
+
+app.post('/sessions/leave', (req, res) => {
+  const { id_session, id_user } = req.body
+  if (!id_session || !id_user) {
+    return res.status(400).json({ error: 'id_session et id_user requis' })
+  }
+  // Suppression directe du participant
+  db.query(
+    'DELETE FROM participate WHERE id_session = ? AND id_user = ?',
+    [id_session, id_user],
+    (err, result) => {
+      if (err) {
+        console.error('leave error:', err.message)
+        return res.status(500).json({ error: err.message })
+      }
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: 'Participation non trouvée' })
+      }
+      res.json({ message: 'Départ de session réussi' })
+    }
+  )
+})
+
+
+//RECHERCHE
+// Endpoint pour récupérer les jeux (avec recherche)
+app.get('/api/games', (req, res) => {
+  const search = req.query.q || '';
+  const sql = search
+    ? "SELECT id_game AS id, name_game AS name, year_game, thumbnail FROM Game WHERE name_game LIKE ?"
+    : "SELECT id_game AS id, name_game AS name, year_game, thumbnail FROM Game";
+  const params = search ? [`%${search}%`] : [];
+  db.query(sql, params, (err, results) => {
+    if (err) {
+      res.status(500).json({error: err});
+      return;
+    }
+    res.json(results);
+  });
+});
+
+app.get('/api/search',async(req,res)=>{
+  const keyword = req.query.q || '';
+  const [rows] = await db.execute('CALL search_games(?)',[keyword]);
+  res.json(rows[0]);
+})
+
+app.get('/categories', (req, res) => {
+  const sql = 'SELECT * FROM Category ORDER BY type_category';
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Erreur récupération catégories :', err.message);
+      return res.status(500).json({ error: 'Erreur serveur' });
+    }
+    res.json(results);
+  });
+});
+
+app.get('/games/category/:id_category', (req, res) => {
+  const id_cat = req.params.id_category;
+  const sql = `
+    SELECT g.*
+    FROM Game g
+    JOIN have h ON g.id_game = h.id_game
+    WHERE h.id_category = ?
+  `;
+  db.query(sql, [id_cat], (err, results) => {
+    if (err) {
+      console.error('Erreur récupération jeux catégorie :', err.message);
+      return res.status(500).json({ error: 'Erreur serveur' });
+    }
     res.json(results);
   });
 });

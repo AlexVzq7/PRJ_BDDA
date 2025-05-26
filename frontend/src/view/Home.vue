@@ -2,20 +2,22 @@
   <div>
     <div class="header">
       <h1>Bienvenue sur la page d’accueil</h1>
+      
+    </div>
 
-      <!-- Partie conditionnelle selon connexion -->
-      <div>
-        <template v-if="user">
-          <div>
-            Connecté en tant que : <strong>{{ user.name_user }}</strong>
-            <button @click="logout">Déconnexion</button>
-          </div>
-        </template>
-        <template v-else>
-          <button @click="$router.push('/login')">Se connecter</button>
-          <button @click="$router.push('/register')">S'inscrire</button>
-        </template>
-      </div>
+    <!-- Filtre catégorie -->
+    <div class="my-4">
+      <label for="category-select">Filtrer par catégorie :</label>
+      <select id="category-select" v-model="selectedCategory" @change="loadGamesByCategory">
+        <option value="">-- Tous les jeux --</option>
+        <option
+          v-for="cat in categories"
+          :key="cat.id_category"
+          :value="cat.id_category"
+        >
+          {{ cat.type_category }}
+        </option>
+      </select>
     </div>
 
     <div class="section">
@@ -38,26 +40,15 @@ export default {
   data() {
     return {
       games: [],
+      categories: [],
+      selectedCategory: '',
       user: null
     }
   },
   mounted() {
-    // Charger les jeux
-    api.getGames()
-      .then(response => {
-        this.games = response.data.map(item => ({
-          id: item.id_game,
-          name: item.name_game,
-          image: item.thumbnail || 'https://via.placeholder.com/300x200',
-          minPlayers: item.joueurs_min || 1,
-          maxPlayers: item.joueurs_max || 9
-        }))
-      })
-      .catch(error => {
-        console.error('Erreur lors du chargement des jeux :', error)
-      })
+    this.loadCategories()
+    this.loadGames()
 
-    // Vérifier si utilisateur connecté dans localStorage
     const storedUser = localStorage.getItem('user')
     if (storedUser) {
       try {
@@ -68,14 +59,54 @@ export default {
     }
   },
   methods: {
+    loadCategories() {
+      api.getCategories()
+        .then(res => {
+          this.categories = res.data
+        })
+        .catch(err => {
+          console.error('Erreur chargement catégories :', err)
+        })
+    },
+    loadGames() {
+      api.getGames()
+        .then(res => {
+          this.games = res.data.map(item => ({
+            id: item.id_game,
+            name: item.name_game,
+            image: item.thumbnail || 'https://via.placeholder.com/300x200',
+            minPlayers: item.joueurs_min || 1,
+            maxPlayers: item.joueurs_max || 9
+          }))
+        })
+        .catch(err => {
+          console.error('Erreur chargement jeux :', err)
+        })
+    },
+    loadGamesByCategory() {
+      if (!this.selectedCategory) {
+        // Si aucune catégorie sélectionnée, charger tous les jeux
+        this.loadGames()
+        return
+      }
+      api.getGamesByCategory(this.selectedCategory)
+        .then(res => {
+          this.games = res.data.map(item => ({
+            id: item.id_game,
+            name: item.name_game,
+            image: item.thumbnail || 'https://via.placeholder.com/300x200',
+            minPlayers: item.joueurs_min || 1,
+            maxPlayers: item.joueurs_max || 9
+          }))
+        })
+        .catch(err => {
+          console.error('Erreur chargement jeux par catégorie :', err)
+        })
+    },
     logout() {
       localStorage.removeItem('user')
       this.user = null
-      // Option 1 : redirection vers login
       this.$router.push('/login')
-
-      // Option 2 : ou recharge la page
-      // window.location.reload()
     }
   }
 }
@@ -91,5 +122,8 @@ export default {
   justify-content: space-between;
   align-items: center;
   border: 1px solid black;
+}
+.my-4 {
+  margin: 1rem 0;
 }
 </style>
