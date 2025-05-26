@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="session-card">
       <!-- Badge temps -->
       <div class="absolute top-2 right-2 bg-gray-700 text-white text-sm px-3 py-1 rounded-full">
         Dans {{ session.startsIn }} heures
@@ -74,5 +74,9 @@
   
   <style scoped>
   /* Ajoute du style personnalisé ici si besoin */
+.session-card{
+  border: 1px solid grey;
+  max-width: 300px;
+}
   </style>
   

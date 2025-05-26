@@ -1,10 +1,13 @@
 <template>
-<div class="p-6" v-if="game">
+<div v-if="game">
     <h1 class="text-2xl font-bold mb-4">{{ game.name }}</h1>
-    <img :src="game.image" alt="image du jeu" class="w-full max-w-md mb-4" />
+    <img :src="game.image" alt="image du jeu" />
     <p>Nombre de joueurs : {{ game.minPlayers }} à {{ game.maxPlayers }}</p>
 
-    <SessionCard/>
+    <div class="session-container">
+        <SessionCard/>
+    </div>
+    
 
 </div>
 
