@@ -5,6 +5,7 @@ import Register from './view/Register.vue'
 import GameView from './view/GameView.vue'
 import Dashboard from './view/Dashboard.vue'
 import DashboardGames from './view/DashboardGames.vue'
+import CreateSessionPage from './pages/CreateSessionPage.vue'
 
 const routes = [
   {
@@ -19,6 +20,11 @@ const routes = [
   { path: '/login', 
     name: 'Login', 
     component: Login 
+  },
+  {
+    path: '/create-session',
+    name: 'CreateSession',
+    component: CreateSessionPage
   },
   { path: '/register', 
     name: 'Register', 

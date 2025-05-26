@@ -32,5 +32,9 @@ export default {
   },
   getGamesByCategory(id_category) {
     return api.get(`/games/category/${id_category}`);
-  }  
+  },
+  createSession(sessionData) {
+    return api.post('/sessions/create', sessionData);
+  }
+
 }

@@ -12,7 +12,7 @@ app.use(express.json());
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: 'Lesaulnes2017',
+  password: '123456789',
   database: 'projet_bda'
 });
 
@@ -277,6 +277,34 @@ app.post('/sessions/leave', (req, res) => {
     }
   )
 });
+
+  app.post('/sessions/create', (req, res) => {
+    const {
+      min_joueurs, max_joueurs, temps_jeu,
+      min_duree, max_duree, age_min,
+      jeu_id, date_debut, id_host
+    } = req.body;
+
+    if (!id_host || !jeu_id || !date_debut) {
+      return res.status(400).json({ error: 'Champs obligatoires manquants' });
+    }
+
+    const sql = 'CALL creer_session(?, ?, ?, ?, ?, ?, ?, ?, ?)';
+    const params = [
+      min_joueurs, max_joueurs, temps_jeu,
+      min_duree, max_duree, age_min,
+      jeu_id, date_debut, id_host
+    ];
+
+    db.query(sql, params, (err, results) => {
+      if (err) {
+        console.error('Erreur création session :', err.message);
+        return res.status(500).json({ error: 'Erreur lors de la création de la session' });
+      }
+      res.json({ message: 'Session créée avec succès' });
+    });
+  });
+
 
 
 // Modifier un jeu existant

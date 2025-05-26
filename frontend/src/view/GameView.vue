@@ -35,6 +35,8 @@
                 <p v-if="game.description">{{ game.description }}</p>
                 <p v-else class="italic text-gray-500">Pas de description disponible.</p>
                 <p class="mt-2 text-sm">Éditeur : <strong>{{ game.publisher || 'Inconnu' }}</strong></p>
+                <button @click="goToCreateSession" class="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"> 🎲 Créer une session pour ce jeu</button>
+
             </div>
         </div>
   
@@ -95,11 +97,18 @@
         .catch(err => console.error('Erreur chargement sessions :', err));
     },
     methods: {
-      formatDate(dateStr) {
-        const d = new Date(dateStr);
-        return d.toLocaleDateString();
-      }
-    }
+  formatDate(dateStr) {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString();
+  },
+  goToCreateSession() {
+    this.$router.push({
+      path: '/create-session',
+      query: { jeu_id: this.game.id }
+    });
+  }
+}
+
   };
   </script>
   
