@@ -1,11 +1,13 @@
 <template>
+  <h1>S'inscrire</h1>
   <form @submit.prevent="register">
-    <input v-model="username" placeholder="Nom" required />
+    <input v-model="username" placeholder="Username" required />
     <input v-model="email" placeholder="Email" required />
     <input v-model="password" placeholder="Mot de passe" required type="password" />
     <button type="submit">Créer un compte</button>
     <div v-if="message">{{ message }}</div>
   </form>
+  <a @click="$router.push('/login')">Déjà un compte ? Connectez-vous.</a>
 </template>
 
 <script>
@@ -44,3 +46,12 @@ export default {
   }
 };
 </script>
+
+
+<style scoped>
+a {
+  cursor: pointer;
+  text-decoration: underline;
+  color: blue;
+}
+</style>

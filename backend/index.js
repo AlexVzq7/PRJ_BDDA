@@ -68,25 +68,32 @@ app.post('/login', async (req, res) => {
     return res.status(400).json({ error: 'Veuillez fournir email et mot de passe.' });
   }
 
-  // Cette partie doit être à l'intérieur de la route login
   db.query('SELECT * FROM user WHERE email_user = ?', [email], async (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
     if (results.length === 0) {
       return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
     }
-    
-    const user = results[0]; // Correction: results, pas result
-    
+
+    const user = results[0];
+
     const valid = await bcrypt.compare(password, user.password_user);
     if (!valid) {
       return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
     }
-    
-    const token = jwt.sign({ id: user.id, email: user.email_user }, 'SECRET', { expiresIn: '1h' });
-    
-    db.query('UPDATE user SET is_online = 1 WHERE id_user = ?', [user.id], (err2) => {
+
+    // Mettre à jour is_online
+    db.query('UPDATE user SET is_online = 1 WHERE id_user = ?', [user.id_user], (err2) => {
       if (err2) return res.status(500).json({ error: err2.message });
-      res.json({ message: 'Connexion réussie', token });
+
+      // Répondre avec uniquement les attributs souhaités, sans token
+      res.json({
+        message: 'Connexion réussie',
+        user: {
+          id_user: user.id_user,
+          name_user: user.name_user,
+          email_user: user.email_user
+        }
+      });
     });
   });
 });
