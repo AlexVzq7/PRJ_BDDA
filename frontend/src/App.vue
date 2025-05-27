@@ -1,8 +1,9 @@
 <template>
   <div id="app">
     <div class="header-app">
-      <a @click="$router.push('/')">Dos</a>
-      <SearchBar />
+      <a @click="$router.push('/')">Mauvaise pioche</a>
+      <div class="search-bar-container"><SearchBar/></div>
+      
       <div>
           <template v-if="user">
             <div>
@@ -11,8 +12,8 @@
             </div>
           </template>
           <template v-else>
-            <button @click="$router.push('/login')">Se connecter</button>
-            <button @click="$router.push('/register')">S'inscrire</button>
+            <button @click="$router.push('/login')" class="btn-connexion">Se connecter</button>
+            <button @click="$router.push('/register')" class="btn-inscription">S'inscrire</button>
           </template>
         </div>
     </div>
@@ -64,13 +65,28 @@ export default {
 }
 body {
   background-color: #f5f5f5;
+  padding: 0 5vw;
 }
 
 .header-app {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 5vw;
+  position: relative;
+  height: 100px;
+  z-index: 100;
+}
+
+.search-bar-container {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translateY(-50%) translateX(-50%);
+  width: 400px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .header-app a {
   font-size: 35px;
@@ -80,5 +96,30 @@ body {
 }
 .header-app a:hover {
   transform: translateY(-2px);
+}
+
+.btn-inscription, .btn-connexion {
+  width: 120px;
+  height: 50px;
+  border-radius: 100px;
+  background-color: black;
+  color: white;
+  font-size: 18px;
+  font-weight: 400;
+  border: 2px solid black;
+  cursor: pointer;
+}
+
+.btn-connexion {
+  width: 150px;
+  color: black;
+  background-color: white;
+  margin-right: 10px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+.btn-connexion:hover {
+  background-color: black;
+  color: white;
 }
 </style>

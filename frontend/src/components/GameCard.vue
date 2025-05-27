@@ -7,11 +7,6 @@
           alt="Image du jeu"
           class="w-full h-44 object-cover"
         />
-        <button
-          class="absolute top-2 right-2 text-gray-500 hover:text-red-500 text-xl"
-        >
-          ♥
-        </button>
       </div>
     </div>
     <div class="p-4">
@@ -20,9 +15,7 @@
         de {{ game.minPlayers }} à {{ game.maxPlayers }} joueurs
       </p>
     </div>
-    <router-link :to="`/game/${game.id}`" class="link-game"
-      >Trouver une session</router-link
-    >
+    <router-link :to="`/game/${game.id}`" class="link-game">Trouver une session</router-link>
   </div>
 </template>
 
@@ -67,11 +60,16 @@ export default {
 
 .img-container {
   width: 100%;
-  min-height: 100%;
+  height: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: start;
   background-color: rgb(135, 135, 135);
+  overflow: hidden;
+}
+.img-container img {
+  width: 100%;
+  height: 100%;
 }
 
 .p-4 {

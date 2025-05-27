@@ -88,9 +88,10 @@ function goToGame(game) {
 
 <style scoped>
 .search-container {
-  max-width: 400px;
-  margin: 30px auto;
+  width: 100%;
+  margin: 30px 0;
   position: relative;
+  z-index: 1000;
 }
 .search-bar {
   width: 100%;

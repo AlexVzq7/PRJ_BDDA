@@ -12,7 +12,7 @@ app.use(express.json());
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: 'root',
+  password: '2539',
   database: 'projet_bda'
 });
 
@@ -278,32 +278,41 @@ app.post('/sessions/leave', (req, res) => {
   )
 });
 
-  app.post('/sessions/create', (req, res) => {
-    const {
-      min_joueurs, max_joueurs, temps_jeu,
-      min_duree, max_duree, age_min,
-      jeu_id, date_debut, id_host
-    } = req.body;
+app.post('/sessions/create', (req, res) => {
+  const {
+    min_joueurs, max_joueurs, temps_jeu,
+    min_duree, max_duree, age_min,
+    jeu_id, id_host
+  } = req.body;
 
-    if (!id_host || !jeu_id || !date_debut) {
-      return res.status(400).json({ error: 'Champs obligatoires manquants' });
+  let date_debut = req.body.date_debut;
+
+  // Correction du format de date_debut
+  date_debut = date_debut.replace('T', ' ');
+  if (date_debut.split(':').length === 2) { // Si seulement heures:minutes
+    date_debut += ':00'; // Ajoute les secondes
+  }
+
+  if (!id_host || !jeu_id || !date_debut) {
+    return res.status(400).json({ error: 'Champs obligatoires manquants' });
+  }
+
+  const sql = 'CALL creer_session(?, ?, ?, ?, ?, ?, ?, ?, ?)';
+  const params = [
+    min_joueurs, max_joueurs, temps_jeu,
+    min_duree, max_duree, age_min,
+    jeu_id, date_debut, id_host
+  ];
+
+  db.query(sql, params, (err, results) => {
+    if (err) {
+      console.error('Erreur création session :', err.message);
+      return res.status(500).json({ error: 'Erreur lors de la création de la session' });
     }
-
-    const sql = 'CALL creer_session(?, ?, ?, ?, ?, ?, ?, ?, ?)';
-    const params = [
-      min_joueurs, max_joueurs, temps_jeu,
-      min_duree, max_duree, age_min,
-      jeu_id, date_debut, id_host
-    ];
-
-    db.query(sql, params, (err, results) => {
-      if (err) {
-        console.error('Erreur création session :', err.message);
-        return res.status(500).json({ error: 'Erreur lors de la création de la session' });
-      }
-      res.json({ message: 'Session créée avec succès' });
-    });
+    res.json({ message: 'Session créée avec succès' });
   });
+});
+
 
 
 
@@ -352,11 +361,16 @@ app.get('/api/games', (req, res) => {
   });
 });
 
-app.get('/api/search',async(req,res)=>{
+app.get('/api/search', (req, res) => {
   const keyword = req.query.q || '';
-  const [rows] = await db.execute('CALL search_games(?)',[keyword]);
-  res.json(rows[0]);
-})
+  db.query('CALL search_games(?)', [keyword], (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(results[0]); // <-- les vraies données
+  });
+});
+
 
 app.get('/categories', (req, res) => {
   const sql = 'SELECT * FROM Category ORDER BY type_category';
