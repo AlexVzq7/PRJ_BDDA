@@ -1,18 +1,21 @@
 <template>
   <div class="homeview">
     <div class="header">
-      <h1>Bienvenue sur la page d’accueil</h1>
+      <h1>
+        Rencontrez des milliers de joueurs <br />autour de jeux de sociétés
+      </h1>
+      <h2>+1500 sessions en cours</h2>
     </div>
 
     <!-- Filtre catégorie -->
     <div class="my-4">
-      <label for="category-select">Filtrer par catégorie :</label>
+      <label for="category-select">Filtres </label>
       <select
         id="category-select"
         v-model="selectedCategory"
         @change="loadGamesByCategory"
       >
-        <option value="">-- Tous les jeux --</option>
+        <option value="">Tous les jeux</option>
         <option
           v-for="cat in categories"
           :key="cat.id_category"
@@ -115,6 +118,32 @@ export default {
 </script>
 
 <style>
+.header {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
+  margin: 25px;
+}
+
+.header h1 {
+  text-align: center;
+}
+h1 {
+  font-size: 45px;
+}
+.header h2 {
+  font-size: 48px;
+  font-weight: bold;
+  padding: 12px 36px;
+  border: none;
+  background: linear-gradient(90deg, #9d95d3 0%, #16162c 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: 0.3s;
+}
+
 .homeview {
   min-height: 100vh;
 }
@@ -127,9 +156,45 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid black;
 }
 .my-4 {
   margin: 1rem 0;
+}
+
+/* Style général du bloc de filtre */
+.my-4 {
+  margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Label du filtre */
+.my-4 label {
+  font-weight: bold;
+  color: #333;
+}
+
+/* Select stylisé */
+.my-4 select {
+  padding: 7px 8px;
+  border: 1px solid #bbb;
+  border-radius: 25px;
+  font-size: 14px;
+  background-color: #fff;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+}
+
+.my-4 select:focus {
+  border-color: #3e5c76;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+  outline: none;
+}
+
+/* Option spéciale pour "-- Tous les jeux --" */
+.my-4 select option:first-child {
+  font-style: italic;
+  color: #777;
 }
 </style>

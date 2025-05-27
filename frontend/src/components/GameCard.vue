@@ -15,7 +15,9 @@
         de {{ game.minPlayers }} à {{ game.maxPlayers }} joueurs
       </p>
     </div>
-    <router-link :to="`/game/${game.id}`" class="link-game">Trouver une session</router-link>
+    <router-link :to="`/game/${game.id}`" class="link-game"
+      >Trouver une session</router-link
+    >
   </div>
 </template>
 
@@ -51,6 +53,7 @@ export default {
   width: 200px;
   background-color: white;
   overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .relative {
@@ -75,6 +78,8 @@ export default {
 .p-4 {
   width: 100%;
   min-height: 50%;
+  padding: 15px;
+  padding-bottom: 0;
 }
 
 .p-4 h2 {
@@ -88,12 +93,12 @@ export default {
 
 .link-game {
   position: absolute;
-  bottom: 0;
-  right: 0;
-  background-color: #111111;
+  bottom: 10px;
+  right: 14px;
+  background-color: #3e5c76;
   text-decoration: none;
   color: white;
-  padding: 5px 10px;
-  border-radius: 10px 0 0 0;
+  padding: 9px 10px;
+  border-radius: 9px;
 }
 </style>
