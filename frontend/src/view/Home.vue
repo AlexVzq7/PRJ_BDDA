@@ -120,6 +120,7 @@ export default {
 }
 .section {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
 }
 .header {
